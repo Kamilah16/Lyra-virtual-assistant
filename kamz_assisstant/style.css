@@ -1,0 +1,55 @@
+body {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+}
+#robot {
+  width: 400px;
+  height: 350px;
+  margin-top: 5px;
+  margin-left: 450px;
+}
+h1 {
+  color: aliceblue;
+}
+#nname {
+  color: rgb(212, 43, 122);
+}
+#ffname {
+  color: aquamarine;
+}
+h1 {
+  font-family: "Oleo Script", system-ui;
+}
+#titlee {
+  margin-left: 430px;
+}
+#micc {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  margin-left: 505px;
+  font-weight: bold;
+  border-radius: 300px;
+  cursor: pointer;
+  box-shadow: 5px 10px;
+  width: 300px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, rgb(212, 43, 122), rgb(33, 142, 185));
+}
+.container-box {
+  
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+#im {
+  width: 100px;
+  height: 100px;
+  margin-left: 600px;
+  display: none;
+}
+.show-image {
+  display: block; /* Show the image when needed */
+}

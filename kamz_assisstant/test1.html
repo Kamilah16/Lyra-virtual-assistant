@@ -1,0 +1,182 @@
+let btn = document.querySelector("#micc");
+let content = document.querySelector("#txtt");
+let voice = document.querySelector("#im");
+
+let voices = [];
+let isProcessing = false;
+let lastSpoken = "";
+
+// Load voices function
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+  console.log("Voices loaded:");
+  voices.forEach((voice, index) => {
+    console.log(`${index}: ${voice.name} (${voice.lang})`);
+  });
+
+  if (voices.length === 0) {
+    setTimeout(loadVoices, 100);
+  }
+}
+
+loadVoices();
+
+window.speechSynthesis.onvoiceschanged = loadVoices;
+
+function getPreferredVoice() {
+  return voices.find(voice =>
+    voice.name.includes("Female") ||
+    voice.name.includes("Zira") ||
+    voice.name.includes("Google UK English Female")
+  ) || voices[0];
+}
+
+function speak(text) {
+  if (voices.length === 0) {
+    console.warn("No voices available. Retrying...");
+    setTimeout(() => speak(text), 1000);
+    return;
+  }
+
+  const textToSpeak = new SpeechSynthesisUtterance(text);
+  textToSpeak.voice = getPreferredVoice();
+  textToSpeak.rate = 1;
+  textToSpeak.pitch = 1;
+  textToSpeak.volume = 1;
+
+  textToSpeak.onerror = (event) => {
+    console.error("Speech synthesis error:", event.error);
+  };
+
+  console.log("Attempting to speak:", text);
+  window.speechSynthesis.speak(textToSpeak);
+
+  // Hide the GIF and show the button after speaking
+  textToSpeak.onend = () => {
+    voice.style.display = "none";
+    btn.style.display = "flex";
+    isProcessing = false; // Reset processing flag
+  };
+}
+
+function wishMe() {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    speak("Good morning Kamz");
+  } else if (hour < 17) {
+    speak("Good afternoon Kamz");
+  } else {
+    speak("Good evening Kamz");
+  }
+}
+
+let recognizeSpeech = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!recognizeSpeech) {
+  alert("Speech Recognition not supported in this browser. Please use a compatible browser.");
+} else {
+  let recognize = new recognizeSpeech();
+  recognize.continuous = true;
+  recognize.interimResults = false;
+
+  recognize.onstart = function () {
+    console.log("Speech recognition started");
+  };
+
+  recognize.onresult = function (event) {
+    let transcript = event.results[event.resultIndex][0].transcript.trim();
+    console.log("Recognized text:", transcript);
+
+    if (!isProcessing) {
+      isProcessing = true;
+      takeCommand(transcript.toLowerCase());
+    }
+  };
+
+  recognize.onerror = function (event) {
+    console.error("Speech recognition error:", event.error);
+  };
+
+  btn.addEventListener("click", () => {
+    if (!isProcessing) {
+      isProcessing = true;
+      voice.style.display = "block";
+      btn.style.display = "none";
+      wishMe();
+      recognize.start();
+    }
+  });
+
+  recognize.onend = () => {
+    voice.style.display = "none";
+    btn.style.display = "flex";
+    isProcessing = false;
+  };
+}
+
+function takeCommand(message) {
+  console.log("Processing command:", message);
+
+  // Prevent repeated processing of the assistant's own response
+  if (isAssistantResponse(message)) {
+    return;
+  }
+
+  if (message.includes("hello") || message.includes("hi")) {
+    speak("Hello Kamz, what's up?");
+  } else if (message.includes("who are you") || message.includes("what's your name")) {
+    speak("I am your virtual assistant here to help you!");
+  } else if (message.includes("how are you") || message.includes("how about you") || message.includes("how are you doing")) {
+    speak("I am fine, thanks for asking.");
+  } else if (message.includes("open youtube")) {
+    speak("Opening YouTube...");
+    window.open("https://youtube.com", "_blank");
+  } else if (message.includes("open google")) {
+    speak("Opening Google...");
+    window.open("https://google.com", "_blank");
+  } else if (message.includes("open instagram")) {
+    speak("Opening Instagram...");
+    window.open("https://www.instagram.com/", "_blank");
+  } else if (message.includes("time")) {
+    let time = new Date().toLocaleTimeString();
+    speak("The current time is " + time);
+  } else if (message.includes("cat")) {
+    window.open("https://www.youtube.com/watch?v=ue_jitOw8Yw", "_blank");
+  } else if (message.includes("rhyme") || message.includes("baby")) {
+    speak("Sure!");
+    window.open("https://www.youtube.com/watch?v=e_04ZrNroTo&list=RDEMqoGUgNWsf_NaVYG4SU5N8g&start_radio=1", "_blank");
+  } else if (message.includes("okay shut up") || message.includes("thank you") || message.includes("okay")) {
+    speak("Okay.");
+  } else if (message.includes("i feel like playing") || message.includes("games") || message.includes("play")) {
+    speak("Why not you try playing this?");
+    window.open("https://poki.com/?campaign=14724960451&adgroup=126257772934&extensionid=&targetid=kwd-11472680&location=9197818&matchtype=e&network=g&device=c&devicemodel=&creative=547237892391&keyword=online%20games&placement=&target=&gad_source=1&gclid=Cj0KCQjwpvK4BhDUARIsADHt9sQGW_YulAKYz-FgDiDGJJoJxTG2Eb5V0nZxO8TN5qmmdGRh1aqg9cgaArELEALw_wcB");
+  } else if (message.includes("calculator")) {
+    speak("Opening calculator");
+    window.open("calculator://");
+  } else {
+    speak(`Here is what I found on the internet regarding ${message.replace("what is", " ")}`);
+    window.open(`https://www.google.com/search?q=${message.replace("lyra", " " || message.replace("liar", " "))}`, "_blank");
+  }
+
+  isProcessing = false; // Reset the processing flag after each command
+}
+
+function isAssistantResponse(message) {
+  const assistantPhrases = [
+    "Hello Kamz",
+    "I am your virtual assistant",
+    "I am fine",
+    "Opening YouTube",
+    "Opening Google",
+    "Opening Instagram",
+    "The current time is",
+    "Sure!",
+    "Okay.",
+    "Why not you try playing this?",
+    "Opening calculator",
+    "Here is what I found on the internet regarding"
+  ];
+
+  return assistantPhrases.some(phrase => message.startsWith(phrase));
+}
+
